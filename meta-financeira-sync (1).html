@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meta R$1.000">
+<meta name="theme-color" content="#0F1E18">
+<title>Meta R$1.000</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0F1E18;
+    --card: #16281F;
+    --card-2: #1C3229;
+    --card-3: #223A2F;
+    --gold: #D4A94C;
+    --gold-dim: #8A7237;
+    --teal: #5FBFA0;
+    --cream: #F1EAD8;
+    --muted: #93A199;
+    --danger: #D4704C;
+    --border: rgba(241,234,216,0.09);
+    --cat-venda: #D4A94C;
+    --cat-servico: #5FBFA0;
+    --cat-freela: #7CA8D4;
+    --cat-outro: #B48ACB;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 60px;
+    overflow-x: hidden;
+  }
+  .wrap{ max-width: 480px; margin: 0 auto; position: relative; }
+  .top{ display:flex; justify-content: space-between; align-items: baseline; margin-bottom: 22px; }
+  .top h1{ font-family: 'Fraunces', serif; font-weight: 500; font-size: 22px; margin:0; color: var(--cream); }
+  .top span{ font-size: 13px; color: var(--muted); }
+  nav{ display:flex; gap: 4px; margin-bottom: 24px; background: var(--card); border-radius: 10px; padding: 4px; border: 1px solid var(--border); }
+  nav button{ flex:1; padding: 10px 0; border:none; background: transparent; color: var(--muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; border-radius: 7px; cursor:pointer; transition: background .15s, color .15s; }
+  nav button.active{ background: var(--card-2); color: var(--gold); }
+  .view{ display:none; }
+  .view.active{ display:block; animation: fadein .25s ease; }
+  @keyframes fadein{ from{ opacity:0; transform: translateY(4px);} to{ opacity:1; transform:none; } }
+
+  .gauge-box{ display:flex; flex-direction:column; align-items:center; margin: 4px 0 20px; position: relative; }
+  .gauge-label{ text-align:center; margin-top: -18px; }
+  .gauge-label .big{ font-family:'Fraunces', serif; font-size: 42px; font-weight: 600; color: var(--cream); font-variant-numeric: tabular-nums; }
+  .gauge-label .of{ font-size: 13px; color: var(--muted); margin-top: 2px; }
+  #arc-fill{ transition: stroke-dasharray 1s cubic-bezier(.22,1,.36,1); }
+  .pulse{ animation: pulse .6s ease; }
+  @keyframes pulse{ 0%{ transform: scale(1);} 40%{ transform: scale(1.06);} 100%{ transform: scale(1);} }
+
+  .milestones{ display:flex; justify-content: space-between; margin: 0 6px 22px; position: relative; }
+  .milestones::before{ content:''; position:absolute; top:11px; left:14px; right:14px; height:2px; background: var(--card-2); z-index:0; }
+  .ms{ display:flex; flex-direction:column; align-items:center; gap:6px; position:relative; z-index:1; }
+  .ms-dot{ width:24px; height:24px; border-radius:50%; background: var(--card-2); border:2px solid var(--card-2); display:flex; align-items:center; justify-content:center; font-size:11px; color: var(--muted); transition: all .4s ease; }
+  .ms-dot.hit{ background: var(--gold); border-color: var(--gold); color:#23190A; font-weight:700; }
+  .ms-lbl{ font-size: 10px; color: var(--muted); }
+
+  .stats{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .stat{ background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .stat .lbl{ font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .stat .val{ font-family:'Fraunces', serif; font-size: 21px; color: var(--gold); font-weight: 500; }
+  .stat.wide{ grid-column: 1 / -1; display:flex; justify-content: space-between; align-items:center; }
+  .stat.wide .val{ color: var(--teal); }
+
+  .chart-card{ background: var(--card); border:1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+  .chart-card .lbl{ font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+  .feed-title{ font-size: 12px; color: var(--muted); margin: 0 2px 10px; }
+  .feed-item{ display:flex; align-items:center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--border); }
+  .feed-item:last-child{ border-bottom:none; }
+  .feed-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .feed-item .fname{ font-size: 13px; flex:1; }
+  .feed-item .fval{ font-size: 13px; color: var(--gold); font-variant-numeric: tabular-nums; }
+
+  form{ background: var(--card); border:1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+  .row{ display:flex; gap: 10px; margin-bottom: 10px; }
+  .field{ flex:1; display:flex; flex-direction:column; gap: 5px; }
+  .field label{ font-size: 12px; color: var(--muted); }
+  input, select{ background: var(--card-2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: var(--cream); font-family:'Inter',sans-serif; font-size: 14px; width:100%; }
+  input:focus, select:focus{ outline: 1px solid var(--gold-dim); }
+  input[type=date]{ color-scheme: dark; }
+  .err{ font-size: 12px; color: var(--danger); margin: -4px 0 8px; display:none; }
+  .add-btn{ width:100%; padding: 11px 0; border-radius: 8px; border:none; cursor:pointer; background: var(--gold); color: #23190A; font-weight: 600; font-size: 14px; font-family:'Inter',sans-serif; }
+  .add-btn:active{ transform: scale(0.99); }
+
+  .cat-picker{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cat-chip{ padding:7px 12px; border-radius:20px; font-size:12px; border:1px solid var(--border); background: var(--card-2); color: var(--muted); cursor:pointer; }
+  .cat-chip[data-cat="venda"].sel{ background: var(--cat-venda); color:#23190A; border-color: var(--cat-venda); }
+  .cat-chip[data-cat="servico"].sel{ background: var(--cat-servico); color:#0B211A; border-color: var(--cat-servico); }
+  .cat-chip[data-cat="freela"].sel{ background: var(--cat-freela); color:#0B1E30; border-color: var(--cat-freela); }
+  .cat-chip[data-cat="outro"].sel{ background: var(--cat-outro); color:#26102F; border-color: var(--cat-outro); }
+
+  .list-total{ display:flex; justify-content: space-between; align-items:baseline; margin-bottom: 12px; padding: 0 2px; }
+  .list-total span:first-child{ font-size: 13px; color: var(--muted); }
+  .list-total span:last-child{ font-family:'Fraunces', serif; color: var(--teal); font-size: 18px; }
+
+  .item{ display:flex; justify-content: space-between; align-items:center; padding: 13px 4px; border-bottom: 1px solid var(--border); }
+  .item:last-child{ border-bottom: none; }
+  .item .left{ display:flex; align-items:center; gap:10px; }
+  .item .catdot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .item .name{ font-size: 14px; color: var(--cream); font-weight: 500; }
+  .item .date{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .item .right{ display:flex; align-items:center; gap: 12px; }
+  .item .amount{ font-family:'Fraunces', serif; color: var(--gold); font-size: 16px; }
+  .item .del{ background:none; border:none; color: var(--muted); cursor:pointer; font-size: 16px; padding: 4px; line-height:1; }
+  .item .del:hover{ color: var(--danger); }
+  .empty{ text-align:center; color: var(--muted); font-size: 13px; padding: 30px 0; }
+  .backup-row{ display:flex; gap: 10px; margin-top: 22px; }
+  .backup-btn{ flex:1; padding: 9px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 12px; font-family:'Inter',sans-serif; cursor:pointer; }
+  .backup-btn:hover{ color: var(--cream); border-color: var(--border-strong, var(--border)); }
+  .backup-msg{ text-align:center; font-size: 12px; color: var(--teal); margin-top: 8px; min-height: 14px; }
+  .loading{ text-align:center; color: var(--muted); font-size: 13px; padding: 40px 0; }
+
+  .confetti{ position:fixed; top:-10px; width:8px; height:8px; z-index: 50; pointer-events:none; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app-wrap">
+  <div class="top">
+    <h1>Rumo aos R$1.000</h1>
+    <span id="dias-restam"></span>
+  </div>
+
+  <nav>
+    <button class="tab-btn active" data-view="painel">Painel</button>
+    <button class="tab-btn" data-view="fontes">Fontes</button>
+  </nav>
+
+  <div id="painel" class="view active">
+    <div class="gauge-box">
+      <svg width="220" height="140" viewBox="0 0 220 140">
+        <path d="M 20 120 A 90 90 0 0 1 200 120" fill="none" stroke="#1C3229" stroke-width="16" stroke-linecap="round"/>
+        <path id="arc-fill" d="M 20 120 A 90 90 0 0 1 200 120" fill="none" stroke="#D4A94C" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 999"/>
+      </svg>
+      <div class="gauge-label">
+        <div class="big" id="valor-atual">R$0</div>
+        <div class="of">de R$1.000 · <span id="pct-atual">0%</span></div>
+      </div>
+    </div>
+
+    <div class="milestones" id="milestones"></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="lbl">Falta alcançar</div>
+        <div class="val" id="falta">R$1.000</div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Ritmo necessário</div>
+        <div class="val" id="ritmo">—</div>
+      </div>
+      <div class="stat wide">
+        <div>
+          <div class="lbl">Prazo</div>
+          <div class="val">23/09</div>
+        </div>
+        <div style="text-align:right">
+          <div class="lbl">Dias restantes</div>
+          <div class="val" id="dias-num">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="lbl">Evolução acumulada</div>
+      <svg id="chart-svg" width="100%" height="110" viewBox="0 0 440 110" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="feed-title">Atividade recente</div>
+    <div id="feed"></div>
+  </div>
+
+  <div id="fontes" class="view">
+    <form id="form-fonte">
+      <div class="row">
+        <div class="field" style="flex:1.4">
+          <label>Fonte</label>
+          <input type="text" id="in-nome" placeholder="Ex: venda de roupas">
+        </div>
+        <div class="field">
+          <label>Valor (R$)</label>
+          <input type="number" id="in-valor" placeholder="0" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="in-data">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Categoria</label>
+        <div class="cat-picker">
+          <button type="button" class="cat-chip sel" data-cat="venda">Venda</button>
+          <button type="button" class="cat-chip" data-cat="servico">Serviço</button>
+          <button type="button" class="cat-chip" data-cat="freela">Freela</button>
+          <button type="button" class="cat-chip" data-cat="outro">Outro</button>
+        </div>
+      </div>
+      <div class="err" id="form-err">Preencha a fonte e o valor.</div>
+      <button type="submit" class="add-btn">Adicionar fonte</button>
+    </form>
+
+    <div class="list-total">
+      <span>Total já levantado</span>
+      <span id="total-fontes">R$0</span>
+    </div>
+    <div id="lista-fontes"><div class="loading">Carregando...</div></div>
+
+    <div class="backup-row">
+      <button type="button" class="backup-btn" id="btn-export">Exportar backup</button>
+      <button type="button" class="backup-btn" id="btn-import">Importar backup</button>
+      <input type="file" id="file-import" accept="application/json" style="display:none">
+    </div>
+    <div class="backup-msg" id="backup-msg"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// 1) Cole aqui o firebaseConfig que o Firebase te deu no passo "Registrar um app Web"
+const firebaseConfig = {
+  apiKey: "COLE_AQUI",
+  authDomain: "COLE_AQUI",
+  projectId: "COLE_AQUI",
+  storageBucket: "COLE_AQUI",
+  messagingSenderId: "COLE_AQUI",
+  appId: "COLE_AQUI"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const progressoRef = doc(db, "meta", "progresso");
+
+const META = 1000;
+const PRAZO = new Date('2026-09-23T23:59:59');
+const CAT_COLOR = { venda: '#D4A94C', servico: '#5FBFA0', freela: '#7CA8D4', outro: '#B48ACB' };
+const CAT_LABEL = { venda: 'Venda', servico: 'Serviço', freela: 'Freela', outro: 'Outro' };
+let fontes = [];
+let catSelecionada = 'venda';
+let prevTotal = 0;
+
+function brl(v){ return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL', maximumFractionDigits: 0 }); }
+function brDate(iso){ const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+function diasRestantes(){ const hoje = new Date(); return Math.ceil((PRAZO - hoje) / (1000*60*60*24)); }
+
+function animarNumero(el, de, para, ms){
+  const t0 = performance.now();
+  function tick(t){
+    const p = Math.min(1, (t - t0) / ms);
+    const val = de + (para - de) * (1 - Math.pow(1 - p, 3));
+    el.textContent = brl(Math.round(val));
+    if(p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function dispararConfete(){
+  for(let i=0;i<28;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = [CAT_COLOR.venda, CAT_COLOR.servico, CAT_COLOR.freela][i%3];
+    c.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    document.body.appendChild(c);
+    const dur = 1800 + Math.random()*900;
+    c.animate([
+      { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+      { transform: `translateY(${window.innerHeight + 40}px) rotate(${360+Math.random()*360}deg)`, opacity: 0.9 }
+    ], { duration: dur, easing: 'cubic-bezier(.4,0,.6,1)' });
+    setTimeout(()=> c.remove(), dur);
+  }
+}
+
+function desenharGrafico(){
+  const svg = document.getElementById('chart-svg');
+  if(fontes.length === 0){
+    svg.innerHTML = '<text x="220" y="58" text-anchor="middle" fill="#93A199" font-size="12" font-family="Inter">Sem dados ainda</text>';
+    return;
+  }
+  const ordenadas = [...fontes].sort((a,b)=> a.data.localeCompare(b.data));
+  let acc = 0;
+  const pontos = ordenadas.map(f => { acc += f.valor; return { data: f.data, acc }; });
+  const total = acc;
+  const max = Math.max(total, META) * 1.05;
+  const W = 440, H = 110, padL = 6, padR = 6, padT = 10, padB = 18;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+
+  const xAt = i => padL + (pontos.length === 1 ? innerW : (i/(pontos.length-1))*innerW);
+  const yAt = v => padT + innerH - (v/max)*innerH;
+
+  let path = `M ${xAt(0)} ${yAt(0)}`;
+  pontos.forEach((p,i)=> path += ` L ${xAt(i)} ${yAt(p.acc)}`);
+  let area = path + ` L ${xAt(pontos.length-1)} ${padT+innerH} L ${xAt(0)} ${padT+innerH} Z`;
+
+  const metaY = yAt(META);
+
+  svg.innerHTML = `
+    <line x1="${padL}" y1="${metaY}" x2="${W-padR}" y2="${metaY}" stroke="#93A199" stroke-width="1" stroke-dasharray="3 4" opacity="0.5"/>
+    <path d="${area}" fill="#D4A94C" opacity="0.12"/>
+    <path d="${path}" fill="none" stroke="#D4A94C" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pontos.map((p,i)=> `<circle cx="${xAt(i)}" cy="${yAt(p.acc)}" r="3" fill="#0F1E18" stroke="#D4A94C" stroke-width="2"/>`).join('')}
+  `;
+}
+
+function render(animar){
+  const total = fontes.reduce((s,f)=>s+f.valor, 0);
+  const pct = Math.min(100, Math.round((total/META)*100));
+  const falta = Math.max(0, META - total);
+  const dias = diasRestantes();
+
+  const valorEl = document.getElementById('valor-atual');
+  if(animar){ animarNumero(valorEl, prevTotal, total, 700); }
+  else { valorEl.textContent = brl(total); }
+
+  document.getElementById('pct-atual').textContent = pct + '%';
+  document.getElementById('falta').textContent = brl(falta);
+  document.getElementById('dias-num').textContent = dias > 0 ? dias : (dias === 0 ? 'hoje' : 'encerrado');
+  document.getElementById('dias-restam').textContent = dias > 0 ? dias + ' dias' : '';
+  document.getElementById('ritmo').textContent = (dias > 0 && falta > 0) ? brl(Math.ceil(falta/dias)) + '/dia' : (falta<=0 ? 'concluído' : '—');
+
+  const arcLen = 282.6;
+  document.getElementById('arc-fill').setAttribute('stroke-dasharray', `${(pct/100)*arcLen} 999`);
+
+  const marcos = [25,50,75,100];
+  document.getElementById('milestones').innerHTML = marcos.map(m => `
+    <div class="ms">
+      <div class="ms-dot ${pct >= m ? 'hit' : ''}">${pct >= m ? '✓' : ''}</div>
+      <div class="ms-lbl">${m}%</div>
+    </div>
+  `).join('');
+
+  document.getElementById('total-fontes').textContent = brl(total);
+
+  const ordenadasDesc = [...fontes].sort((a,b)=> b.data.localeCompare(a.data));
+
+  const feedEl = document.getElementById('feed');
+  if(fontes.length === 0){
+    feedEl.innerHTML = '<div class="empty">Nenhuma atividade ainda.</div>';
+  } else {
+    feedEl.innerHTML = ordenadasDesc.slice(0,5).map(f => `
+      <div class="feed-item">
+        <div class="feed-dot" style="background:${CAT_COLOR[f.cat || 'outro']}"></div>
+        <div class="fname">${f.nome}</div>
+        <div class="fval">+${brl(f.valor)}</div>
+      </div>
+    `).join('');
+  }
+
+  desenharGrafico();
+
+  const listEl = document.getElementById('lista-fontes');
+  if(fontes.length === 0){
+    listEl.innerHTML = '<div class="empty">Nenhuma fonte adicionada ainda.</div>';
+  } else {
+    listEl.innerHTML = ordenadasDesc.map(f => `
+      <div class="item" data-id="${f.id}">
+        <div class="left">
+          <div class="catdot" style="background:${CAT_COLOR[f.cat || 'outro']}"></div>
+          <div>
+            <div class="name">${f.nome}</div>
+            <div class="date">${brDate(f.data)} · ${CAT_LABEL[f.cat || 'outro']}</div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="amount">${brl(f.valor)}</div>
+          <button class="del" data-id="${f.id}" aria-label="Remover">✕</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('.del').forEach(btn=>{
+      btn.addEventListener('click', async (e)=>{
+        const id = e.currentTarget.getAttribute('data-id');
+        fontes = fontes.filter(f => f.id !== id);
+        await salvar();
+        prevTotal = fontes.reduce((s,f)=>s+f.valor, 0);
+        render(false);
+      });
+    });
+  }
+
+  if(animar && pct >= 100 && prevTotal < META){
+    dispararConfete();
+    document.querySelector('.gauge-box').classList.add('pulse');
+    setTimeout(()=> document.querySelector('.gauge-box').classList.remove('pulse'), 600);
+  }
+
+  prevTotal = total;
+}
+
+async function salvar(){
+  try{ await setDoc(progressoRef, { fontes }); }
+  catch(err){ console.error('Erro ao salvar', err); }
+}
+
+function carregar(){
+  onSnapshot(progressoRef, (snap)=>{
+    const dados = snap.exists() ? snap.data().fontes : [];
+    fontes = dados || [];
+    render(false);
+  }, (err)=>{
+    console.error('Erro ao sincronizar', err);
+    document.getElementById('lista-fontes').innerHTML = '<div class="empty">Não consegui conectar ao Firebase. Confira o firebaseConfig e as regras.</div>';
+  });
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.view).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.cat-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('sel'));
+    chip.classList.add('sel');
+    catSelecionada = chip.dataset.cat;
+  });
+});
+
+document.getElementById('form-fonte').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const nome = document.getElementById('in-nome').value.trim();
+  const valor = parseFloat(document.getElementById('in-valor').value);
+  const data = document.getElementById('in-data').value || new Date().toISOString().slice(0,10);
+  const errEl = document.getElementById('form-err');
+
+  if(!nome || isNaN(valor) || valor <= 0){
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  fontes.push({ id: Date.now().toString(), nome, valor, data, cat: catSelecionada });
+  await salvar();
+  document.getElementById('in-nome').value = '';
+  document.getElementById('in-valor').value = '';
+  document.getElementById('in-data').value = '';
+  render(true);
+
+  document.querySelectorAll('.tab-btn')[0].click();
+});
+
+document.getElementById('btn-export').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(fontes, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const hoje = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `backup-meta-${hoje}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  const msg = document.getElementById('backup-msg');
+  msg.textContent = 'Backup baixado.';
+  setTimeout(()=> msg.textContent = '', 2500);
+});
+
+document.getElementById('btn-import').addEventListener('click', ()=>{
+  document.getElementById('file-import').click();
+});
+
+document.getElementById('file-import').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const msg = document.getElementById('backup-msg');
+  try{
+    const text = await file.text();
+    const dados = JSON.parse(text);
+    if(!Array.isArray(dados)) throw new Error('formato invalido');
+    fontes = dados;
+    await salvar();
+    prevTotal = 0;
+    render(false);
+    msg.textContent = 'Backup importado com sucesso.';
+  }catch(err){
+    msg.style.color = 'var(--danger)';
+    msg.textContent = 'Não consegui ler esse arquivo.';
+  }
+  setTimeout(()=> { msg.textContent = ''; msg.style.color = 'var(--teal)'; }, 3000);
+  e.target.value = '';
+});
+
+carregar();
+</script>
+</body>
+</html>
